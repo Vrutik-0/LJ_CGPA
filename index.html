@@ -1,0 +1,799 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CGPA Calculator — LJKU</title>
+<meta name="description" content="Semester-wise CGPA calculator for Lok Jagruti Kendra University B.E. students.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=Inter:wght@400;500&display=swap" rel="stylesheet">
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --bg:           #ffffff;
+  --surf:         #F5F5F7;
+  --bd:           rgba(0,0,0,0.08);
+  --bd-hover:     rgba(0,0,0,0.18);
+  --bd-focus:     #5448C8;
+  --text:         #0D0D0D;
+  --text-2:       #666;
+  --text-3:       #AAA;
+  --accent:       #5448C8;
+  --accent-dim:   rgba(84,72,200,0.10);
+  --r:            14px;
+  --rsm:          9px;
+  --tr:           0.18s ease;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg:         #0E0E10;
+    --surf:       #18181B;
+    --bd:         rgba(255,255,255,0.09);
+    --bd-hover:   rgba(255,255,255,0.18);
+    --text:       #EBEBEB;
+    --text-2:     #888;
+    --text-3:     #555;
+    --accent:     #7C6FF5;
+    --accent-dim: rgba(124,111,245,0.12);
+  }
+}
+
+body {
+  font-family: 'Inter', system-ui, sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  min-height: 100vh;
+  padding: 0 20px 96px;
+  -webkit-font-smoothing: antialiased;
+}
+
+.wrap { max-width: 680px; margin: 0 auto; }
+
+/* ── HEADER ── */
+header { padding: 56px 0 28px; opacity: 0; }
+
+.eyebrow {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.10em;
+  text-transform: uppercase;
+  color: var(--accent);
+  margin-bottom: 14px;
+}
+.eyebrow-dot {
+  width: 5px; height: 5px;
+  border-radius: 50%;
+  background: var(--accent);
+  opacity: 0.5;
+}
+
+h1 {
+  font-family: 'Space Grotesk', sans-serif;
+  font-size: clamp(32px, 5.5vw, 48px);
+  font-weight: 600;
+  letter-spacing: -0.035em;
+  line-height: 1.08;
+  margin-bottom: 10px;
+  color: var(--text);
+}
+
+.sub {
+  font-size: 14px;
+  color: var(--text-2);
+  line-height: 1.55;
+  max-width: 420px;
+}
+
+.hash-note {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  margin-top: 14px;
+  padding: 6px 12px;
+  background: var(--surf);
+  border: 1px solid var(--bd);
+  border-radius: 20px;
+  font-size: 11px;
+  color: var(--text-3);
+}
+.hash-note strong { color: var(--text-2); font-weight: 500; }
+
+/* ── SEM SELECTOR ── */
+.sem-selector { margin: 32px 0 18px; opacity: 0; }
+
+.section-label {
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.09em;
+  text-transform: uppercase;
+  color: var(--text-3);
+  margin-bottom: 10px;
+}
+
+.sem-pills { display: flex; gap: 7px; flex-wrap: wrap; }
+
+.sem-pill {
+  width: 40px; height: 40px;
+  border-radius: 50%;
+  border: 1px solid var(--bd);
+  background: transparent;
+  color: var(--text-2);
+  font-family: 'Space Grotesk', sans-serif;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: border-color var(--tr), color var(--tr), background var(--tr);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  -webkit-tap-highlight-color: transparent;
+}
+.sem-pill:hover  { border-color: var(--bd-hover); color: var(--text); }
+.sem-pill.active { background: var(--accent); border-color: var(--accent); color: #fff; }
+
+/* ── SEM GRID ── */
+.sem-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(185px, 1fr));
+  gap: 10px;
+  margin-bottom: 18px;
+}
+
+.sem-card {
+  background: var(--surf);
+  border: 1px solid var(--bd);
+  border-radius: var(--r);
+  padding: 16px 16px 14px;
+  transition: border-color var(--tr);
+  opacity: 0;
+  transform: translateY(14px);
+  will-change: transform, opacity;
+}
+.sem-card:hover        { border-color: var(--bd-hover); }
+.sem-card:focus-within { border-color: var(--accent); }
+
+.card-label {
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.10em;
+  color: var(--text-3);
+  margin-bottom: 13px;
+}
+
+.igroup { margin-bottom: 9px; }
+.igroup:last-child { margin-bottom: 0; }
+.igroup-label { font-size: 11px; color: var(--text-2); margin-bottom: 5px; }
+
+.igroup input {
+  width: 100%;
+  height: 44px;
+  background: var(--bg);
+  border: 1px solid var(--bd);
+  border-radius: var(--rsm);
+  padding: 0 12px;
+  font-family: 'Space Grotesk', sans-serif;
+  font-size: 20px;
+  font-weight: 500;
+  color: var(--text);
+  outline: none;
+  transition: border-color var(--tr);
+  -moz-appearance: textfield;
+}
+.igroup input::-webkit-inner-spin-button,
+.igroup input::-webkit-outer-spin-button { -webkit-appearance: none; }
+.igroup input:focus   { border-color: var(--accent); }
+.igroup input.invalid { border-color: #E03131 !important; }
+.igroup input::placeholder { color: var(--text-3); font-size: 14px; font-weight: 400; }
+
+/* ── BUTTON ── */
+.btn-row { display: flex; gap: 10px; margin-bottom: 36px; opacity: 0; }
+
+.calc-btn {
+  flex: 1;
+  height: 52px;
+  background: var(--accent);
+  border: none;
+  border-radius: var(--r);
+  color: #fff;
+  font-family: 'Space Grotesk', sans-serif;
+  font-size: 16px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: opacity var(--tr), transform 0.12s;
+  -webkit-tap-highlight-color: transparent;
+}
+.calc-btn:hover  { opacity: 0.87; }
+.calc-btn:active { transform: scale(0.987); }
+
+.reset-btn {
+  height: 52px;
+  padding: 0 20px;
+  background: transparent;
+  border: 1px solid var(--bd);
+  border-radius: var(--r);
+  color: var(--text-2);
+  font-family: 'Inter', sans-serif;
+  font-size: 14px;
+  cursor: pointer;
+  transition: border-color var(--tr), color var(--tr);
+  white-space: nowrap;
+  -webkit-tap-highlight-color: transparent;
+}
+.reset-btn:hover { border-color: var(--bd-hover); color: var(--text); }
+
+/* ── ERROR ── */
+.err {
+  padding: 10px 14px;
+  background: rgba(224,49,49,0.07);
+  border: 1px solid rgba(224,49,49,0.22);
+  border-radius: var(--rsm);
+  color: #C92A2A;
+  font-size: 13px;
+  margin-bottom: 14px;
+  display: none;
+}
+
+/* ── RESULT ── */
+#result { display: none; opacity: 0; }
+
+.result-hero {
+  display: flex;
+  align-items: center;
+  gap: 28px;
+  padding: 26px 28px;
+  background: var(--surf);
+  border: 1px solid var(--bd);
+  border-radius: var(--r);
+  margin-bottom: 10px;
+  flex-wrap: wrap;
+}
+
+/* Ring */
+.ring-wrap {
+  position: relative;
+  width: 110px; height: 110px;
+  flex-shrink: 0;
+}
+.ring-wrap svg { position: absolute; inset: 0; }
+.ring-track { fill: none; stroke: var(--bd); stroke-width: 5; }
+.ring-prog  {
+  fill: none;
+  stroke: var(--accent);
+  stroke-width: 5;
+  stroke-linecap: round;
+  stroke-dasharray: 283;
+  stroke-dashoffset: 283;
+}
+.ring-center {
+  position: absolute; inset: 0;
+  display: flex; flex-direction: column;
+  align-items: center; justify-content: center;
+}
+.big-num {
+  font-family: 'Space Grotesk', sans-serif;
+  font-size: 26px;
+  font-weight: 700;
+  letter-spacing: -0.04em;
+  color: var(--text);
+  line-height: 1;
+}
+.big-lbl {
+  font-size: 9px;
+  font-weight: 600;
+  letter-spacing: 0.10em;
+  text-transform: uppercase;
+  color: var(--text-3);
+  margin-top: 4px;
+}
+
+/* Meta */
+.result-meta { flex: 1; min-width: 160px; }
+.result-pct {
+  font-family: 'Space Grotesk', sans-serif;
+  font-size: 36px;
+  font-weight: 600;
+  letter-spacing: -0.04em;
+  color: var(--text);
+  line-height: 1.1;
+  margin-bottom: 6px;
+}
+.result-pct-sub { font-size: 12px; color: var(--text-3); margin-bottom: 10px; }
+.class-pill {
+  display: inline-flex; align-items: center;
+  padding: 5px 13px;
+  border-radius: 20px;
+  font-size: 12px; font-weight: 500;
+  background: var(--accent-dim);
+  color: var(--accent);
+  margin-bottom: 8px;
+}
+.result-note { font-size: 12px; color: var(--text-3); }
+
+/* ── BREAKDOWN ── */
+.breakdown {
+  border: 1px solid var(--bd);
+  border-radius: var(--r);
+  overflow: hidden;
+  margin-bottom: 24px;
+}
+
+.brow {
+  display: grid;
+  grid-template-columns: 58px 1fr 52px 72px;
+  gap: 8px;
+  align-items: center;
+}
+.brow-head {
+  padding: 9px 16px;
+  background: var(--surf);
+  border-bottom: 1px solid var(--bd);
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--text-3);
+}
+.brow-row {
+  padding: 11px 16px;
+  border-bottom: 1px solid var(--bd);
+  font-size: 13px;
+  color: var(--text-2);
+  transition: background var(--tr);
+}
+.brow-row:last-child { border-bottom: none; }
+.brow-row:hover { background: var(--surf); }
+.brow-total { font-weight: 600; color: var(--text); background: var(--surf); }
+
+.bar-cell { display: flex; align-items: center; gap: 8px; }
+.bar-track {
+  flex: 1; height: 3px;
+  background: var(--bd);
+  border-radius: 2px;
+  overflow: hidden;
+}
+.bar-fill  { height: 100%; background: var(--accent); border-radius: 2px; width: 0; }
+.bar-val   {
+  font-family: 'Space Grotesk', sans-serif;
+  font-size: 13px; font-weight: 500;
+  color: var(--text);
+  min-width: 32px;
+}
+.num { text-align: right; font-family: 'Space Grotesk', sans-serif; font-weight: 500; color: var(--text); }
+
+/* ── SCALE ── */
+.scale-toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+  color: var(--text-3);
+  cursor: pointer;
+  user-select: none;
+  margin-bottom: 10px;
+  transition: color var(--tr);
+}
+.scale-toggle:hover { color: var(--text-2); }
+.scale-arrow { font-size: 9px; transition: transform 0.2s; display: inline-block; }
+.scale-arrow.open { transform: rotate(90deg); }
+
+.scale-table {
+  display: none;
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 12px;
+  margin-bottom: 24px;
+  border: 1px solid var(--bd);
+  border-radius: var(--rsm);
+  overflow: hidden;
+}
+.scale-table th, .scale-table td {
+  padding: 7px 12px;
+  border-bottom: 1px solid var(--bd);
+  text-align: left;
+}
+.scale-table tr:last-child td { border-bottom: none; }
+.scale-table th { background: var(--surf); font-weight: 600; font-size: 10px; letter-spacing: 0.06em; text-transform: uppercase; color: var(--text-3); }
+.scale-table td { color: var(--text-2); }
+
+/* ── FOOTER ── */
+footer {
+  text-align: center;
+  padding-top: 20px;
+  font-size: 12px;
+  color: var(--text-3);
+  line-height: 1.8;
+  opacity: 0;
+}
+footer a { color: var(--accent); text-decoration: none; }
+footer a:hover { text-decoration: underline; }
+
+/* ── RESPONSIVE ── */
+@media (max-width: 500px) {
+  .sem-grid { grid-template-columns: 1fr 1fr; }
+  .result-hero { padding: 18px 20px; gap: 14px; }
+  .result-pct { font-size: 28px; }
+  .brow { grid-template-columns: 46px 1fr 44px 60px; gap: 5px; }
+  .brow-head, .brow-row { padding: 10px 12px; }
+}
+@media (max-width: 340px) {
+  .sem-grid { grid-template-columns: 1fr; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<!-- HEADER -->
+<header id="hdr">
+  <div class="eyebrow">
+    <span class="eyebrow-dot"></span>
+    Lok Jagruti Kendra University &nbsp;·&nbsp; B.E.
+  </div>
+  <h1>CGPA<br>Calculator</h1>
+  <p class="sub">Enter your SPI and credits from each semester marksheet. Credits are pre-filled — update if yours differ.</p>
+  <div class="hash-note">
+    <strong>#</strong> Constitution of India, Environmental Science &amp; MOOC courses are excluded from CGPA
+  </div>
+</header>
+
+<!-- SEM SELECTOR -->
+<div class="sem-selector" id="semSel">
+  <div class="section-label">Semesters completed</div>
+  <div class="sem-pills" id="semPills">
+    <button class="sem-pill" data-n="1">1</button>
+    <button class="sem-pill" data-n="2">2</button>
+    <button class="sem-pill active" data-n="3">3</button>
+    <button class="sem-pill" data-n="4">4</button>
+    <button class="sem-pill" data-n="5">5</button>
+    <button class="sem-pill" data-n="6">6</button>
+    <button class="sem-pill" data-n="7">7</button>
+    <button class="sem-pill" data-n="8">8</button>
+  </div>
+</div>
+
+<!-- INPUT GRID -->
+<div class="sem-grid" id="grid"></div>
+
+<!-- ERROR -->
+<div class="err" id="err"></div>
+
+<!-- BUTTONS -->
+<div class="btn-row" id="btnRow">
+  <button class="calc-btn" id="calcBtn">Calculate CGPA</button>
+  <button class="reset-btn" id="resetBtn">Reset</button>
+</div>
+
+<!-- RESULT -->
+<section id="result">
+  <div class="result-hero">
+    <div class="ring-wrap">
+      <svg viewBox="0 0 110 110" width="110" height="110" aria-hidden="true">
+        <circle class="ring-track" cx="55" cy="55" r="45" transform="rotate(-90 55 55)"/>
+        <circle class="ring-prog"  id="ring"  cx="55" cy="55" r="45" transform="rotate(-90 55 55)"/>
+      </svg>
+      <div class="ring-center">
+        <span class="big-num" id="cgpaDisp" aria-live="polite">—</span>
+        <span class="big-lbl">CGPA</span>
+      </div>
+    </div>
+    <div class="result-meta">
+      <div class="result-pct"     id="pctDisp">—</div>
+      <div class="result-pct-sub">equivalent percentage</div>
+      <div class="class-pill"     id="classPill">—</div>
+      <div class="result-note"    id="resNote"></div>
+    </div>
+  </div>
+
+  <div class="breakdown" id="bdown"></div>
+
+  <div class="scale-toggle" id="scaleToggle">
+    <span class="scale-arrow" id="scaleArrow">▶</span>
+    Grading scale
+  </div>
+  <table class="scale-table" id="scaleTable">
+    <thead>
+      <tr><th>CGPA range</th><th>Equivalent %</th><th>Class</th></tr>
+    </thead>
+    <tbody>
+      <tr><td>7.00 – 10.00</td><td>65.0% – 95.0%</td><td>First Class with Distinction</td></tr>
+      <tr><td>6.00 – 6.99</td> <td>55.0% – 64.9%</td><td>First Class</td></tr>
+      <tr><td>5.50 – 5.99</td> <td>50.0% – 54.9%</td><td>Higher Second Class</td></tr>
+      <tr><td>5.00 – 5.49</td> <td>45.0% – 49.9%</td><td>Second Class</td></tr>
+      <tr><td>3.50 – 4.99</td> <td>30.0% – 44.9%</td><td>Pass Class</td></tr>
+      <tr><td>Below 3.50</td>  <td>Below 30.0%</td>  <td>Fail</td></tr>
+    </tbody>
+  </table>
+</section>
+
+<!-- FOOTER -->
+<footer id="foot">
+  Built for LJKU students &nbsp;·&nbsp;
+  <a href="https://github.com" target="_blank" rel="noopener">View on GitHub 🦆</a><br>
+  CGPA = Total Grade Points ÷ Total Credits &nbsp;·&nbsp; % = (CGPA − 0.5) × 10
+</footer>
+
+</div><!-- .wrap -->
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/animejs/3.2.1/anime.min.js"></script>
+<script>
+/* ── DATA ── */
+const DEFAULT_CREDITS = [24, 27, 24, 24, 24, 24, 24, 24];
+let nSems = 3;
+
+/* ── CLASSIFY ── */
+function classify(cgpa) {
+  if (cgpa < 3.50) return { label: 'Fail',                       col: '#C92A2A' };
+  if (cgpa < 5.00) return { label: 'Pass Class',                 col: '#D9480F' };
+  if (cgpa < 5.50) return { label: 'Second Class',               col: '#2B8A3E' };
+  if (cgpa < 6.00) return { label: 'Higher Second Class',        col: '#1971C2' };
+  if (cgpa < 7.00) return { label: 'First Class',                col: '#1971C2' };
+  return                   { label: 'First Class with Distinction', col: null   };
+}
+
+/* ── BUILD CARDS ── */
+function buildCards(n, fromSemChange) {
+  const grid = document.getElementById('grid');
+
+  const doCreate = () => {
+    grid.innerHTML = '';
+    for (let i = 1; i <= n; i++) {
+      const d = document.createElement('div');
+      d.className = 'sem-card';
+      d.innerHTML =
+        `<div class="card-label">Semester ${i}</div>
+         <div class="igroup">
+           <div class="igroup-label">SPI</div>
+           <input type="number" id="spi${i}" min="0" max="10" step="0.01"
+                  placeholder="e.g. 8.79" autocomplete="off" inputmode="decimal">
+         </div>
+         <div class="igroup">
+           <div class="igroup-label">Credits earned</div>
+           <input type="number" id="cr${i}" min="1" max="60" step="1"
+                  value="${DEFAULT_CREDITS[i - 1]}" placeholder="${DEFAULT_CREDITS[i - 1]}"
+                  autocomplete="off" inputmode="numeric">
+         </div>`;
+      grid.appendChild(d);
+    }
+    anime({
+      targets: '.sem-card',
+      opacity:    [0, 1],
+      translateY: [14, 0],
+      duration:   420,
+      delay:      anime.stagger(52),
+      easing:     'easeOutQuart'
+    });
+  };
+
+  const existing = grid.querySelectorAll('.sem-card');
+  if (fromSemChange && existing.length) {
+    anime({
+      targets:  existing,
+      opacity:  0,
+      translateY: -10,
+      duration: 180,
+      easing:   'easeInQuad',
+      complete: doCreate
+    });
+  } else {
+    doCreate();
+  }
+}
+
+/* ── CALCULATE ── */
+function calculate() {
+  const errEl = document.getElementById('err');
+  let totalGP = 0, totalCr = 0, hasErr = false;
+  const rows = [];
+
+  for (let i = 1; i <= nSems; i++) {
+    const spiEl = document.getElementById('spi' + i);
+    const crEl  = document.getElementById('cr'  + i);
+    const spi   = parseFloat(spiEl.value);
+    const cr    = parseFloat(crEl.value);
+    const spiOk = !isNaN(spi) && spi >= 0 && spi <= 10;
+    const crOk  = !isNaN(cr)  && cr  >  0;
+    spiEl.classList.toggle('invalid', !spiOk);
+    crEl .classList.toggle('invalid', !crOk);
+    if (!spiOk || !crOk) { hasErr = true; continue; }
+    rows.push({ i, spi, cr, gp: spi * cr });
+  }
+
+  if (hasErr) {
+    errEl.style.display = 'block';
+    errEl.textContent = 'Please enter a valid SPI (0 – 10) and credits (> 0) for every semester.';
+    anime({ targets: '#err', translateX: [0, -8, 8, -5, 5, 0], duration: 440, easing: 'linear' });
+    return;
+  }
+
+  errEl.style.display = 'none';
+  rows.forEach(r => { totalGP += r.gp; totalCr += r.cr; });
+
+  const cgpa = totalGP / totalCr;
+  const pct  = (cgpa - 0.5) * 10;
+  const cls  = classify(cgpa);
+  const accentColor = getComputedStyle(document.documentElement)
+                        .getPropertyValue('--accent').trim();
+
+  /* Populate meta */
+  document.getElementById('pctDisp').textContent = pct.toFixed(2) + '%';
+  document.getElementById('resNote').textContent =
+    totalGP.toFixed(2) + ' grade pts ÷ ' + totalCr + ' credits';
+
+  const pill = document.getElementById('classPill');
+  pill.textContent = cls.label;
+  if (cls.col) {
+    pill.style.background = cls.col + '18';
+    pill.style.color       = cls.col;
+  } else {
+    pill.style.background = 'var(--accent-dim)';
+    pill.style.color       = 'var(--accent)';
+  }
+
+  /* Breakdown table */
+  const bdown = document.getElementById('bdown');
+  bdown.innerHTML =
+    `<div class="brow brow-head">
+       <span>Sem</span>
+       <span>SPI</span>
+       <span style="text-align:right">Credits</span>
+       <span style="text-align:right">Grade pts</span>
+     </div>
+     ${rows.map(r =>
+      `<div class="brow brow-row">
+         <span>${r.i}</span>
+         <div class="bar-cell">
+           <div class="bar-track"><div class="bar-fill" data-w="${(r.spi / 10 * 100).toFixed(2)}"></div></div>
+           <span class="bar-val">${r.spi.toFixed(2)}</span>
+         </div>
+         <span class="num">${r.cr}</span>
+         <span class="num">${r.gp.toFixed(2)}</span>
+       </div>`).join('')}
+     <div class="brow brow-row brow-total">
+       <span>CGPA</span>
+       <div class="bar-cell">
+         <div class="bar-track"><div class="bar-fill" data-w="${(cgpa / 10 * 100).toFixed(2)}"></div></div>
+         <span class="bar-val">${cgpa.toFixed(2)}</span>
+       </div>
+       <span class="num">${totalCr}</span>
+       <span class="num">${totalGP.toFixed(2)}</span>
+     </div>`;
+
+  /* Show result panel */
+  const res = document.getElementById('result');
+  res.style.display = 'block';
+  anime({ targets: '#result', opacity: [0, 1], translateY: [30, 0], duration: 540, easing: 'easeOutQuart' });
+
+  /* Ring fill */
+  const circ = 2 * Math.PI * 45;
+  const offset = circ - (Math.min(cgpa, 10) / 10) * circ;
+  const ring = document.getElementById('ring');
+  ring.style.strokeDasharray  = circ;
+  ring.style.strokeDashoffset = circ;
+  setTimeout(() => {
+    anime({ targets: ring, strokeDashoffset: offset, duration: 1100, easing: 'easeOutExpo' });
+  }, 80);
+
+  /* CGPA counter */
+  const dispEl = document.getElementById('cgpaDisp');
+  anime({
+    targets:  { v: 0 },
+    v:        cgpa,
+    duration: 1050,
+    easing:   'easeOutExpo',
+    update(a) { dispEl.textContent = parseFloat(a.animations[0].currentValue).toFixed(2); }
+  });
+
+  /* Bar fills — staggered */
+  setTimeout(() => {
+    const fills = bdown.querySelectorAll('.bar-fill');
+    anime({
+      targets:  fills,
+      width:    el => el.dataset.w + '%',
+      duration: 720,
+      delay:    anime.stagger(50),
+      easing:   'easeOutQuart'
+    });
+  }, 260);
+
+  /* Scroll on mobile */
+  if (window.innerWidth < 600) {
+    setTimeout(() => res.scrollIntoView({ behavior: 'smooth', block: 'start' }), 320);
+  }
+}
+
+/* ── RESET ── */
+function reset() {
+  for (let i = 1; i <= nSems; i++) {
+    const spiEl = document.getElementById('spi' + i);
+    const crEl  = document.getElementById('cr'  + i);
+    if (spiEl) { spiEl.value = ''; spiEl.classList.remove('invalid'); }
+    if (crEl)  { crEl.value  = DEFAULT_CREDITS[i - 1]; crEl.classList.remove('invalid'); }
+  }
+  const res = document.getElementById('result');
+  if (res.style.display !== 'none') {
+    anime({
+      targets:  res,
+      opacity:  0,
+      translateY: 10,
+      duration: 200,
+      easing:   'easeInQuad',
+      complete: () => { res.style.display = 'none'; }
+    });
+  }
+  document.getElementById('err').style.display = 'none';
+}
+
+/* ── SEM PILLS ── */
+document.getElementById('semPills').addEventListener('click', e => {
+  const pill = e.target.closest('.sem-pill');
+  if (!pill) return;
+  document.querySelectorAll('.sem-pill').forEach(p => p.classList.remove('active'));
+  pill.classList.add('active');
+  nSems = +pill.dataset.n;
+
+  anime({ targets: pill, scale: [0.80, 1.12, 1], duration: 300, easing: 'easeOutBack' });
+
+  const res = document.getElementById('result');
+  if (res.style.display !== 'none') {
+    anime({ targets: res, opacity: 0, duration: 180, complete: () => res.style.display = 'none' });
+  }
+
+  document.getElementById('err').style.display = 'none';
+  buildCards(nSems, true);
+});
+
+/* ── BUTTONS ── */
+document.getElementById('calcBtn').addEventListener('click', () => {
+  anime({ targets: '#calcBtn', scale: [0.96, 1], duration: 320, easing: 'easeOutBack' });
+  calculate();
+});
+
+document.getElementById('resetBtn').addEventListener('click', reset);
+
+/* ── ENTER KEY ── */
+document.addEventListener('keydown', e => {
+  if (e.key === 'Enter') {
+    const id = e.target?.id || '';
+    if (id.startsWith('spi') || id.startsWith('cr')) calculate();
+  }
+});
+
+/* ── SCALE TOGGLE ── */
+document.getElementById('scaleToggle').addEventListener('click', function() {
+  const tbl   = document.getElementById('scaleTable');
+  const arrow = document.getElementById('scaleArrow');
+  const open  = tbl.style.display === 'table';
+  arrow.classList.toggle('open', !open);
+  if (open) {
+    anime({ targets: tbl, opacity: 0, duration: 180,
+      complete: () => tbl.style.display = 'none' });
+  } else {
+    tbl.style.display = 'table';
+    anime({ targets: tbl, opacity: [0, 1], translateY: [-4, 0], duration: 240, easing: 'easeOutQuad' });
+  }
+});
+
+/* ── ENTRANCE ── */
+anime({ targets: '#hdr',    opacity: [0, 1], translateY: [-14, 0], duration: 640, easing: 'easeOutQuart' });
+anime({ targets: '#semSel', opacity: [0, 1], translateY: [8, 0],   duration: 520, delay: 130, easing: 'easeOutQuart' });
+anime({ targets: '#btnRow', opacity: [0, 1], duration: 400, delay: 500, easing: 'easeOutQuart' });
+anime({ targets: '#foot',   opacity: [0, 1], duration: 380, delay: 680, easing: 'easeOutQuart' });
+
+buildCards(3);
+</script>
+</body>
+</html>
